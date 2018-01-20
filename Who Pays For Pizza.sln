@@ -6,9 +6,6 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Who Pays For Pizza", "Who Pays For Pizza\Who Pays For Pizza.vcxproj", "{575DEFEA-637C-470F-A588-923C700CD21A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{FD53895D-33F7-4B0D-840E-83D341656B49}"
-	ProjectSection(SolutionItems) = preProject
-		pizzaOrder.txt = pizzaOrder.txt
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
