@@ -44,7 +44,6 @@ int main(int argc, char* argv[])
 		.run(), vm); // Parse the command line and store the results in the variables map which we declared above
 
 	/** Handle options **/
-
 	if (vm.count("help")) // Help requested
 	{		
 		std::cout << ourName << ": a program which prints the next person who will pay for pizza and shifts the order for the next time it is run." << std::endl << std::endl << "Usage: " << ourName << " [file to parse]" << std::endl << std::endl << "The program expects the file to contain a list of members who will pay in turn which is separated by spaces." << std::endl;
