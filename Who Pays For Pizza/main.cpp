@@ -1,11 +1,16 @@
-/* STL */
+/* Standard C++ */
 #include <iostream> // std::cout
 #include <string> // std::string
-#include <queue> // std::queue for kicks
+#include <deque> // std::deque to move the first line to the last one
+#include <iterator> // std::istream_iterator, std::ostream_iterator, std::back_inserter
+#include <algorithm> // std::copy
 
 /* Boost */
 #include <boost/filesystem.hpp> // boost::filesystem::path
 #include <boost/program_options.hpp> // boost::program_options::options_description, boost::program_options::positional_options_description, boost::program_options::command_line_parser, boost::program_options::variables_map, boost::program_options::store
+
+/* Our headers */
+#include "StreamLine.hpp" // StreamLine class to read lines from a file
 
 /**
 * A small program which tells us who should pay for pizza each week. Reads the file which is given on the command line into memory, and
@@ -58,7 +63,7 @@ int main(int argc, char* argv[])
 	}
 
 	// If we got here,we have a file name
-	std::queue<std::string> fLines; // Holds lines of the file so that we can move the top line to the back and rewrite it to the file
+	std::deque<std::string> fLines; // Holds lines of the file so that we can move the top line to the back and rewrite it to the file
 	boost::filesystem::path nameFilePath(vm["file"].as<std::string>()); // Convert the name which was given to a path
 
 	if (!boost::filesystem::exists(nameFilePath)) // Path DNE, error
@@ -69,23 +74,11 @@ int main(int argc, char* argv[])
 
 	// If we got here, the file exists
 	boost::filesystem::ifstream nameFileStream(nameFilePath); // Open the file for reading
-	std::string curLine; // Used to hold the current line
-
-	while (nameFileStream.good()) // Loop until the end of the file
-	{
-		std::getline(nameFileStream, curLine); // Fetch a line from the file
-		fLines.push(curLine); // Store it in the vector
-	}
-
+	std::copy(std::istream_iterator<StreamLine>(nameFileStream), std::istream_iterator<StreamLine>(), std::back_inserter(fLines)); // Read lines from the file using our custom class. We can store the results directly into the queue because the class can be implicitly converted to an std::string.
 	nameFileStream.close(); // Close the input stream - we have read everything
-
-	// Print the name of the person who will have to pay this week
-	std::cout << fLines.front() << " is paying this week." << std::endl;
-
-	/* Move the first person in the queue to the back */
-	std::string newLast = fLines.front(); // Queue's pop doesn't return the value which was popped, so we need to store it first
-	fLines.pop(); // Remove the person who was at the front of the queue
-	fLines.push(newLast); // Push the person who was at the front of the queue to the back, moving them to the back of the queue for next time
+	std::cout << fLines.front() << " is paying this week." << std::endl; // Print the name of the person who will have to pay this week
+	fLines.push_back(fLines.front()); // Copy the first person in the queue to the back
+	fLines.pop_front(); // Remove the reference to the person from the front of the queue 
 
 	/* Delete the existing file so that we can overwrite it with our queue's data */
 	try
@@ -101,19 +94,9 @@ int main(int argc, char* argv[])
 
 	/* Write the data to the file */
 	boost::filesystem::ofstream newNameFileStrm(nameFilePath); // Create an object to write to the same file
-
-	while (!fLines.empty()) // Loop until we have written all of the lines in the new order
-	{
-		newNameFileStrm << fLines.front();
-		
-		if (fLines.size() != 1) // Not the last line in the vector, need to write a newline
-		{
-			newNameFileStrm << std::endl; // Write the name and end the line
-		}
-
-		//std::clog << fLines.front() << std::endl;
-		fLines.pop(); // Remove the name which we just wrote
-	}
+	std::copy(fLines.cbegin(), fLines.cend()-1, std::ostream_iterator<std::string>(newNameFileStrm, "\n")); // Write the data back to the file, separated by newlines. Stop at the second-to-last person so that we can write the last person without a newline
+	std::copy(fLines.cbegin(), fLines.cend() - 1, std::ostream_iterator<std::string>(std::clog, "\n")); // Debugging - write the lines to std::clog as well
+	newNameFileStrm << fLines.back(); // Write the last person to the file without a new line
 
 	// All done, exit
 	return 0;
